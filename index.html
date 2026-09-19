@@ -363,6 +363,9 @@
   }
   .email-form input:focus, .email-form textarea:focus{ outline:none; border-color:var(--pink); }
   .email-form textarea{ resize:vertical; min-height:100px; }
+  .field-error{ display:none; color:var(--red); font-size:0.8rem; margin-top:8px; }
+  .field-error.show{ display:block; }
+  #captchaQuestion{ color:var(--pink); font-weight:600; font-family:var(--sans); }
   .form-submit{
     width:100%; background:var(--red); color:#fff; border:none;
     padding:14px 24px; border-radius:999px; font-weight:600; font-size:0.98rem;
@@ -738,6 +741,11 @@
               <label for="ef-msg">Üzeneted</label>
               <textarea id="ef-msg" name="Üzenet" required></textarea>
             </div>
+            <div class="field">
+              <label for="ef-captcha">Biztonsági kérdés: <span id="captchaQuestion">…</span></label>
+              <input type="text" id="ef-captcha" inputmode="numeric" autocomplete="off" required>
+              <p class="field-error" id="captchaError">Helytelen válasz, próbáld újra.</p>
+            </div>
             <button type="submit" class="form-submit">Üzenet küldése</button>
           </form>
           <p class="form-note">Az üzenet egyenesen a <strong>venusszeged@gmail.com</strong> címre érkezik.</p>
@@ -807,6 +815,35 @@
           mobileMenu.classList.remove('open');
           menuToggle.setAttribute('aria-expanded', 'false');
         });
+      });
+    }
+
+    /* Egyszerű, kliensoldali matek-captcha a kapcsolati űrlaphoz spam ellen. */
+    var emailForm = document.querySelector('.email-form');
+    var captchaQuestionEl = document.getElementById('captchaQuestion');
+    var captchaInput = document.getElementById('ef-captcha');
+    var captchaError = document.getElementById('captchaError');
+    var captchaAnswer = 0;
+
+    function newCaptcha(){
+      var a = Math.floor(Math.random() * 8) + 2;
+      var b = Math.floor(Math.random() * 8) + 2;
+      captchaAnswer = a + b;
+      if(captchaQuestionEl){ captchaQuestionEl.textContent = a + ' + ' + b + ' = ?'; }
+    }
+
+    if(emailForm && captchaInput){
+      newCaptcha();
+      emailForm.addEventListener('submit', function(e){
+        var given = parseInt(captchaInput.value, 10);
+        if(given !== captchaAnswer){
+          e.preventDefault();
+          captchaError.classList.add('show');
+          captchaInput.value = '';
+          newCaptcha();
+        } else {
+          captchaError.classList.remove('show');
+        }
       });
     }
 
